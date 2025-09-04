@@ -15,11 +15,10 @@ local Debounce = {}
 ---@param leading? boolean
 ---@return HlslensDebounce
 function Debounce:new(fn, wait, leading)
-    vim.validate({
-        fn = {fn, 'function'},
-        wait = {wait, 'number'},
-        leading = {leading, 'boolean', true}
-    })
+    vim.validate("fn", fn, "function")
+    vim.validate("wait", wait, "number")
+    vim.validate("leading", leading, "boolean", true)
+
     local o = setmetatable({}, self)
     o.timer = nil
     o.fn = vim.schedule_wrap(fn)
@@ -31,7 +30,7 @@ end
 
 function Debounce:call(...)
     local timer = self.timer
-    self.args = {...}
+    self.args = { ... }
     if not timer then
         ---@type userdata
         timer = uv.new_timer()
@@ -74,5 +73,5 @@ Debounce.__index = Debounce
 Debounce.__call = Debounce.call
 
 return setmetatable(Debounce, {
-    __call = Debounce.new
+    __call = Debounce.new,
 })

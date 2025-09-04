@@ -9,7 +9,7 @@ M.has08 = (function()
     local has08
     return function()
         if has08 == nil then
-            has08 = fn.has('nvim-0.8') == 1
+            has08 = fn.has("nvim-0.8") == 1
         end
         return has08
     end
@@ -20,7 +20,7 @@ M.has09 = (function()
     local has09
     return function()
         if has09 == nil then
-            has09 = fn.has('nvim-0.9') == 1
+            has09 = fn.has("nvim-0.9") == 1
         end
         return has09
     end
@@ -31,7 +31,7 @@ M.has10 = (function()
     local has10
     return function()
         if has10 == nil then
-            has10 = fn.has('nvim-0.10') == 1
+            has10 = fn.has("nvim-0.10") == 1
         end
         return has10
     end
@@ -41,7 +41,7 @@ end)()
 ---@param winid number
 ---@return boolean
 function M.isWinValid(winid)
-    return type(winid) == 'number' and winid > 0 and api.nvim_win_is_valid(winid)
+    return type(winid) == "number" and winid > 0 and api.nvim_win_is_valid(winid)
 end
 
 ---
@@ -50,7 +50,8 @@ end
 ---@param comp fun(any, any)
 ---@return number
 function M.binSearch(items, element, comp)
-    vim.validate({items = {items, 'table'}, comp = {comp, 'function'}})
+    vim.validate("items", items, "table")
+    vim.validate("comp", comp, "function")
     local min, max, mid = 1, #items, 1
     local r = 0
     while min <= max do
@@ -85,8 +86,7 @@ end
 
 function M.getWinInfo(winid)
     local winfos = fn.getwininfo(winid)
-    assert(type(winfos) == 'table' and #winfos == 1,
-        '`getwininfo` expected 1 table with single element.')
+    assert(type(winfos) == "table" and #winfos == 1, "`getwininfo` expected 1 table with single element.")
     return winfos[1]
 end
 
@@ -102,14 +102,14 @@ end
 ---@param winid number
 ---@return number
 function M.textOff(winid)
-    vim.validate({winid = {winid, 'number'}})
+    vim.validate("winid", winid, "number")
     return M.getWinInfo(winid).textoff
 end
 
 ---
 ---@return boolean
 function M.isCmdLineWin()
-    return fn.getcmdwintype() ~= ''
+    return fn.getcmdwintype() ~= ""
 end
 
 ---
@@ -143,12 +143,11 @@ end
 ---@param winid? number
 ---@return number[]
 function M.matchAddPos(hlGroup, plist, prior, winid)
-    vim.validate({
-        hlGroup = {hlGroup, 'string'},
-        plist = {plist, 'table'},
-        prior = {prior, 'number', true},
-        winid = {winid, 'number'}
-    })
+    vim.validate("hlGroup", hlGroup, "string")
+    vim.validate("plist", plist, "table")
+    vim.validate("prior", prior, "number", true)
+    vim.validate("winid", winid, "number")
+
     prior = prior or 10
 
     local ids = {}
@@ -156,12 +155,12 @@ function M.matchAddPos(hlGroup, plist, prior, winid)
     for i, p in ipairs(plist) do
         table.insert(l, p)
         if i % 8 == 0 then
-            table.insert(ids, fn.matchaddpos(hlGroup, l, prior, -1, {window = winid}))
+            table.insert(ids, fn.matchaddpos(hlGroup, l, prior, -1, { window = winid }))
             l = {}
         end
     end
     if #l > 0 then
-        table.insert(ids, fn.matchaddpos(hlGroup, l, prior, -1, {window = winid}))
+        table.insert(ids, fn.matchaddpos(hlGroup, l, prior, -1, { window = winid }))
     end
     return ids
 end
@@ -175,9 +174,9 @@ function M.winCall(winid, f)
         return f()
     else
         local curWinid = api.nvim_get_current_win()
-        local noaSetWin = 'noa call nvim_set_current_win(%d)'
+        local noaSetWin = "noa call nvim_set_current_win(%d)"
         cmd(noaSetWin:format(winid))
-        local r = {pcall(f)}
+        local r = { pcall(f) }
         cmd(noaSetWin:format(curWinid))
         assert(r[1], r[2])
         return unpack(r, 2)
@@ -195,8 +194,8 @@ function M.searchPosSafely(pattern, flags, stopline, timeout, skip)
     -- TODO
     -- Pass `nil` to pcall with Neovim function make serialization issue, need `unpack` as a
     -- helper to prevent `nil` to pass.
-    local ok, res = pcall(fn.searchpos, pattern, unpack({flags, stopline, timeout, skip}))
-    return ok and res or {0, 0}
+    local ok, res = pcall(fn.searchpos, pattern, unpack({ flags, stopline, timeout, skip }))
+    return ok and res or { 0, 0 }
 end
 
 ---
