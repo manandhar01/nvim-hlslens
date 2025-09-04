@@ -17,10 +17,10 @@ local Throttle = {}
 ---@param noTrailing? boolean
 ---@return HlslensThrottle
 function Throttle:new(fn, limit, noLeading, noTrailing)
-    vim.validate("fn", fn, "function")
-    vim.validate("limit", limit, "number")
-    vim.validate("noLeading", noLeading, "boolean", true)
-    vim.validate("noTrailing", noTrailing, "boolean", true)
+    vim.validate('fn', fn, 'function')
+    vim.validate('limit', limit, 'number')
+    vim.validate('noLeading', noLeading, 'boolean', true)
+    vim.validate('noTrailing', noTrailing, 'boolean', true)
 
     assert(not (noLeading and noTrailing), [[The values of noLeading and noTrailing can't be all true]])
     local o = setmetatable({}, self)
@@ -49,11 +49,11 @@ function Throttle:call(...)
         if self.leading then
             self.fn(...)
         else
-            self.pendingArgs = { ... }
+            self.pendingArgs = {...}
         end
     else
         if self.trailing then
-            self.pendingArgs = { ... }
+            self.pendingArgs = {...}
         end
     end
 end
@@ -73,5 +73,5 @@ Throttle.__index = Throttle
 Throttle.__call = Throttle.call
 
 return setmetatable(Throttle, {
-    __call = Throttle.new,
+    __call = Throttle.new
 })

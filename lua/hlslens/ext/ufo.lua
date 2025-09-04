@@ -2,10 +2,10 @@ local api = vim.api
 local fn = vim.fn
 local cmd = vim.cmd
 
-local render = require("hlslens.render")
-local utils = require("hlslens.utils")
-local event = require("hlslens.lib.event")
-local disposable = require("hlslens.lib.disposable")
+local render = require('hlslens.render')
+local utils = require('hlslens.utils')
+local event = require('hlslens.lib.event')
+local disposable = require('hlslens.lib.disposable')
 
 ---@class HlslensExternalUfo
 ---@field winid number
@@ -14,11 +14,11 @@ local disposable = require("hlslens.lib.disposable")
 ---@field initialized boolean
 ---@field disposables HlslensDisposable[]
 local Ufo = {
-    disposables = {},
+    disposables = {}
 }
 
 function Ufo:listVirtTextInfos(bufnr, row, endRow)
-    local marks = api.nvim_buf_get_extmarks(bufnr, self.ns, { row, 0 }, { endRow, -1 }, { details = true })
+    local marks = api.nvim_buf_get_extmarks(bufnr, self.ns, {row, 0}, {endRow, -1}, {details = true})
     local res = {}
     local lastRow, lastEndRow = -1, -1
     for _, mark in ipairs(marks) do
@@ -29,7 +29,7 @@ function Ufo:listVirtTextInfos(bufnr, row, endRow)
                 row = sr,
                 endRow = er,
                 priority = details.priority,
-                virtText = details.virt_text,
+                virtText = details.virt_text
             })
             lastRow, lastEndRow = sr, er
         end
@@ -47,7 +47,7 @@ function Ufo:virtTextWidth(virtText)
 end
 
 local function calibratePos(pos, offsetLnum)
-    return { pos[1] - offsetLnum + 1, pos[2] }
+    return {pos[1] - offsetLnum + 1, pos[2]}
 end
 
 ---
@@ -55,14 +55,14 @@ end
 ---@param ... any
 ---@return boolean, number
 function Ufo:nN(char, ...)
-    vim.validate("char", char, function(c)
-        return c == "n" or c == "N"
+    vim.validate('char', char, function(c)
+        return c == 'n' or c == 'N'
     end, [['n' or 'N']])
     local winid
-    local ok, msg = pcall(cmd, "norm!" .. vim.v.count1 .. char)
+    local ok, msg = pcall(cmd, 'norm!' .. vim.v.count1 .. char)
     if not ok then
         ---@diagnostic disable-next-line: need-check-nil
-        api.nvim_echo({ { msg:match("(E%d+:.*)$"), "ErrorMsg" } }, false, {})
+        api.nvim_echo({{msg:match('(E%d+:.*)$'), 'ErrorMsg'}}, false, {})
         return ok, winid
     end
     if self.module then
@@ -70,17 +70,17 @@ function Ufo:nN(char, ...)
         self.winid = winid
         if utils.isWinValid(self.winid) then
             local bufnr = api.nvim_win_get_buf(self.winid)
-            api.nvim_create_autocmd("WinClosed", {
+            api.nvim_create_autocmd('WinClosed', {
                 group = self.auGroupId,
                 buffer = bufnr,
                 once = true,
                 callback = function(ev)
-                    event:emit("UfoPreviewClosed", ev.buf)
-                end,
+                    event:emit('UfoPreviewClosed', ev.buf)
+                end
             })
         end
     end
-    return require("hlslens").start(), winid
+    return require('hlslens').start(), winid
 end
 
 function Ufo:decoratePeekWindow(winid, sList, eList, idx)
@@ -111,23 +111,20 @@ function Ufo:initialize(module)
         return self
     end
     self.module = module
-    self.ns = api.nvim_create_namespace("ufo")
+    self.ns = api.nvim_create_namespace('ufo')
     self.winid = -1
-    self.auGroupId = api.nvim_create_augroup("HlSearchLensUfoPreview", {})
+    self.auGroupId = api.nvim_create_augroup('HlSearchLensUfoPreview', {})
     local disposables = {}
-    table.insert(
-        disposables,
-        disposable:create(function()
-            self.winid = -1
-            self.initialized = false
-            self.module = nil
-            if self.auGroupId then
-                api.nvim_del_augroup_by_id(self.auGroupId)
-                self.auGroupId = nil
-            end
-        end)
-    )
-    event:on("LensUpdated", function(bufnr, pattern, changedtick, sList, eList, idx, rIdx, region)
+    table.insert(disposables, disposable:create(function()
+        self.winid = -1
+        self.initialized = false
+        self.module = nil
+        if self.auGroupId then
+            api.nvim_del_augroup_by_id(self.auGroupId)
+            self.auGroupId = nil
+        end
+    end))
+    event:on('LensUpdated', function(bufnr, pattern, changedtick, sList, eList, idx, rIdx, region)
         local winid = fn.bufwinid(bufnr)
         if #sList == 0 or not utils.isWinValid(winid) or not vim.wo[winid].foldenable then
             return
@@ -150,26 +147,26 @@ function Ufo:initialize(module)
                 local hlsTextInfo = curRow <= s and hlsTextInfos[1] or hlsTextInfos[len]
                 local hlsVirtText = hlsTextInfo.virtText
                 -- replace `Ignore` highlight with `UfoFoldedBg`
-                hlsVirtText[1][2] = "UfoFoldedBg"
+                hlsVirtText[1][2] = 'UfoFoldedBg'
                 if not virtText then
-                    virtText = require("ufo.decorator"):getVirtTextAndCloseFold(winid, s + 1)
+                    virtText = require('ufo.decorator'):getVirtTextAndCloseFold(winid, s + 1)
                 end
                 local width = self:virtTextWidth(virtText)
                 local hlsVirtTextWidth = self:virtTextWidth(hlsVirtText)
                 if width + hlsVirtTextWidth >= lineWidth then
-                    local prefix = " ⋯"
-                    table.insert(hlsVirtText, 1, { prefix, "UfoFoldedEllipsis" })
+                    local prefix = ' ⋯'
+                    table.insert(hlsVirtText, 1, {prefix, 'UfoFoldedEllipsis'})
                     width = lineWidth - fn.strdisplaywidth(prefix) - hlsVirtTextWidth - 1
                 end
                 local priority = textInfo.priority
                 render:setVirtText(bufnr, s, hlsVirtText, {
                     virt_text_win_col = width,
-                    priority = type(priority) == "number" and priority + 1 or 100,
+                    priority = type(priority) == 'number' and priority + 1 or 100,
                 })
             end
         end
     end, disposables)
-    event:on("UfoPreviewClosed", function(bufnr)
+    event:on('UfoPreviewClosed', function(bufnr)
         self.winid = -1
         render.clear(true, bufnr, true)
     end, disposables)
