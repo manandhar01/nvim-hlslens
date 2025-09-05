@@ -55,7 +55,7 @@ end
 ---@param ... any
 ---@return boolean, number
 function Ufo:nN(char, ...)
-    vim.validate('char', char, function(c)
+    utils.validate('char', char, function(c)
         return c == 'n' or c == 'N'
     end, [['n' or 'N']])
     local winid

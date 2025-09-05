@@ -1,5 +1,7 @@
 local uv = vim.loop
 
+local utils = require('hlslens.utils')
+
 ---@class HlslensDebounce
 ---@field timer userdata
 ---@field fn function
@@ -15,9 +17,9 @@ local Debounce = {}
 ---@param leading? boolean
 ---@return HlslensDebounce
 function Debounce:new(fn, wait, leading)
-    vim.validate('fn', fn, 'function')
-    vim.validate('wait', wait, 'number')
-    vim.validate('leading', leading, 'boolean', true)
+    utils.validate('fn', fn, 'function')
+    utils.validate('wait', wait, 'number')
+    utils.validate('leading', leading, 'boolean', true)
 
     local o = setmetatable({}, self)
     o.timer = nil

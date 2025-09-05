@@ -37,6 +37,22 @@ M.has10 = (function()
     end
 end)()
 
+---@return fun(): boolean
+M.has11 = (function()
+    local has10
+    return function()
+        if has10 == nil then
+            has10 = fn.has('nvim-0.10') == 1
+        end
+        return has10
+    end
+end)()
+
+function M.validate(name, val, validator, opt)
+    return M.has11() and vim.validate(name, val, validator, opt) or
+        vim.validate({name = {val, validator, opt}})
+end
+
 ---
 ---@param winid number
 ---@return boolean
@@ -50,8 +66,8 @@ end
 ---@param comp fun(any, any)
 ---@return number
 function M.binSearch(items, element, comp)
-    vim.validate('items', items, 'table')
-    vim.validate('comp', comp, 'function')
+    M.validate('items', items, 'table')
+    M.validate('comp', comp, 'function')
     local min, max, mid = 1, #items, 1
     local r = 0
     while min <= max do
@@ -102,7 +118,7 @@ end
 ---@param winid number
 ---@return number
 function M.textOff(winid)
-    vim.validate('winid', winid, 'number')
+    M.validate('winid', winid, 'number')
     return M.getWinInfo(winid).textoff
 end
 
@@ -143,10 +159,10 @@ end
 ---@param winid? number
 ---@return number[]
 function M.matchAddPos(hlGroup, plist, prior, winid)
-    vim.validate('hlGroup', hlGroup, 'string')
-    vim.validate('plist', plist, 'table')
-    vim.validate('prior', prior, 'number', true)
-    vim.validate('winid', winid, 'number')
+    M.validate('hlGroup', hlGroup, 'string')
+    M.validate('plist', plist, 'table')
+    M.validate('prior', prior, 'number', true)
+    M.validate('winid', winid, 'number')
 
     prior = prior or 10
 

@@ -1,5 +1,7 @@
 local api = vim.api
 
+local utils = require('hlslens.utils')
+
 ---@class HlslensRenderExtmark
 local Extmark = {
     bufs = {},
@@ -41,7 +43,7 @@ end
 ---@return number[]
 function Extmark:setHighlight(bufnr, hlGroup, start, finish, opts)
     local function doUnPack(pos)
-        vim.validate('pos', pos, function(p)
+        utils.validate('pos', pos, function(p)
             local t = type(p)
             return t == 'table' or t == 'number'
         end, 'must be table or number type')
